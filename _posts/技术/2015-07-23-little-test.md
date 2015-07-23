@@ -10,9 +10,12 @@ description:
 ### 代码块
 ```python
 def somefun()
+
+class someclass()
+
+import numpy as np
 ```
 
 ### 公式
 
-$$\sum_{i=0}^100 i$$
-
+MathJax与pjax冲突，暂时没有精力去解决，不知有没有大神有答案！
