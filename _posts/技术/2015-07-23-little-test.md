@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 开始之前
-category: 菜谱
+category: 技术 
 tags: 
 keywords: 
 description: 
