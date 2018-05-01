@@ -4,7 +4,7 @@ markdown: redcarpet
 # markdown: kramdown
 
 # 作者信息
-author: 
+author:
   name: ygao12
   email: miegao12@gmail.com
   github: http://github.com/ygao12
@@ -16,12 +16,12 @@ url: http://ygao12.github.io
 rss_url: /pages/atom.xml
 
 # gavatar头像及Favicon
-gavatar: /public/img/deer3.png
-favicon: /public/img/deer3.png
+gavatar: /public/img/agn.png
+favicon: /public/img/agn.png
 
 # google analytics 设置
 #ga:
-#  id: UA-54262064-1 
+#  id: UA-54262064-1
 #  url: painterlin.com
 
 # disqus 设置
@@ -32,8 +32,8 @@ disqus:
 active: 读书
 
 # 首页除了最新文章外显示分类
-cates: 
-  - MechineLearning 
+cates:
+  - MechineLearning
   - Python
 
 # 中文本地化
