@@ -1,0 +1,304 @@
+---
+layout: post
+title: Effective C++笔记
+category: 技术
+tags: cpp coding
+keywords: effective-cpp
+description: effective-cpp笔记
+---
+* contents
+{:toc}
+
+# Prefix
+
+这是effective c++学习笔记，参考自网上翻译：
+
+[Effective c++](https://legacy.gitbook.com/book/wizardforcel/effective-cpp/details)
+
+
+
+
+# Terminology
+
+编译型语言一般需要两个阶段，**编译（Compile）**和**链接（Link）**
+
+### 编译
+
+这是第一步，将源文件解释为**中间代码文件**，即`Object File`，一般Windows系统下为`.ojb`文件，UNIX下`.o`文件。
+
+> 此时，编译器需要语法的正确，函数与变量的声明的正确。对于后者，通常是你需要告诉编译器头文件的所在位置（头文件中应该只是声明，而定义应该放在C/C++文件中），只要所有的语法正确，编译器就可以编译出中间目标文件。一般来说，每个源文件都应该对应于一个中间目标文件（`O`文件或是`OBJ`文件）。 
+
+### 链接
+
+这是第二阶段，将编译时生成的`Object File`合成执行文件。
+
+> 此时，主要是**链接函数**和**全局变量**，使用中间目标文件（`O`文件或是`OBJ`文件）来进行。链接器与函数所在的源文件无关，只与函数的中间目标文件（`Object File`）有关，在大多数时候，由于源文件太多，编译生成的中间目标文件太多，而在链接时需要明显地指出中间目标文件名，这对于编译很不方便，所以，我们要给中间目标文件打个包，在Windows下这种包叫**库文件**（`Library File`)，也就是 `.lib` 文件，在UNIX下，是`Archive File`，也就是` .a` 文件。 
+
+### 总结
+
+> 源文件首先会生成中间目标文件，再由中间目标文件生成执行文件。在编译时，编译器只检测程序语法，和函数、变量是否被声明。如果函数未被声明，编译器会给出一个警告，但可以生成`Object File`。而在链接程序时，链接器会在所有的Object File中找寻函数的实现，如果找不到，那到就会报链接错误码（`Linker Error`），在VC下，这种错误一般是：Link 2001错误，意思说是说，链接器未能找到函数的实现。你需要指定函数的`Object File`.
+
+# Makefile Introduction
+
+### Make规则
+
+> 1. 如果这个工程没有编译过，那么我们的所有文件都要编译并被链接。
+> 2. 如果这个工程的某几个C文件被修改，那么我们只编译被修改的C文件，并链接目标程序。
+> 3. 如果这个工程的头文件被改变了，那么我们需要编译引用了这几个头文件的C文件，并链接目标程序。
+
+### Makefile规则
+
+> ```makefile
+> target: prerequisites ...
+> 	command
+> 	...
+> ```
+>
+
+- `target`是一Make目标，可以是`Object File`，也可以是执行文件。还可以是一个标签（`Label`)
+- `prerequisites`是要生成对应`target`所需要的文件或是目标
+- `command`是Make需要执行的命令（任意的`Shell`命令），如果其不与`target: prerequisites`在同一行，那么，必须以`Tab`开头，如果和`prerequisites`在同一行，那么可以用分号`;`做为分隔，如`target: prerequisites; command`
+
+> 这是一个文件的依赖关系，`target`这一个或多个的目标文件依赖于`prerequisites`中的文件，其生成规则定义在`command`中。`prerequisites`中如果有一个以上的文件比`target`文件新，`command`所定义的命令就会被执行。这就是Makefile的规则。
+
+# Demo
+
+>```makefile
+>edit : main.o kbd.o command.o display.o \
+>      insert.o search.o files.o utils.o
+>	cc -o edit main.o kbd.o command.o display.o \
+>           insert.o search.o files.o utils.o
+>main.o : main.c defs.h
+>	cc -c main.c
+>kbd.o : kbd.c defs.h command.h
+>	cc -c kbd.c
+>command.o : command.c defs.h command.h
+>	cc -c command.c
+>display.o : display.c defs.h buffer.h
+>	cc -c display.c
+>insert.o : insert.c defs.h buffer.h
+>	cc -c insert.c
+>search.o : search.c defs.h buffer.h
+>	cc -c search.c
+>files.o : files.c defs.h buffer.h command.h
+>	cc -c files.c
+>utils.o : utils.c defs.h
+>	cc -c utils.c
+>clean :
+>	rm edit main.o kbd.o command.o display.o \
+>           insert.o search.o files.o utils.o
+>```
+
+#### 关于这个例子的说明
+
+> - 反斜杠(`\`)是换行符。
+> - 内容保存在`Makefile`或`makefile`的文件中
+> - 同目录下使用命令`make`生成执行文件edit。
+> - `make clean`可以删除执行文件和所有的中间目标文件
+> - 目标文件`target`包含执行文件edit和中间目标文件`*.o`
+> - 依赖文件`prerequisites`是冒号后面` .c `文件和 `.h`文件
+> - 每一个` .o `文件都有一组依赖文件，而这些` .o `文件又是执行文件 `edit` 的依赖文件
+> - 依赖关系的实质上就是说明了目标文件是由哪些文件生成的，换言之，目标文件是哪些文件更新的
+> - 后续的那一行定义了如何生成目标文件的**操作系统命令，一定要以一个`Tab`键作为开头。`make`并不管命令是怎么工作的，他只管执行所定义的命令**
+> - `make`会比较`targets`文件和`prerequisites`文件的修改日期，如果`prerequisites`文件的日期要比`targets`文件的日期要新，或者`target`不存在的话，那么，`make`就会执行后续定义的命令
+> - `clean`不是一个文件，其冒号后什么也没有，`make`不会自动去找文件的依赖性，不会自动执行其后所定义的命令。要执行其后的命令，需要在`make`命令后明显得指出这个`Lable`的名字。这样的方法非常有用，我们可以在一个`makefile`中定义不用的编译或是和编译无关的命令，比如程序的打包、备份
+
+#### Makefile工作过程
+
+在默认的方式下，即只输入make命令。
+
+1. `make`会在当前目录下找名字叫`Makefile`或`makefile`的文件
+
+2. 找文件中的第一个目标文件`target`，上例中，即`edit`这个文件，此文件作为最终的目标文件
+
+3.  若`edit`文件不存在，或`edit`所依赖的 `.o` 文件的修改时间比`edit`文件新，执行后面所定义的命令生成`edit`文件。
+
+4. 若`edit`所依赖的`.o`文件也存在，那么`make`会在当前文件中找目标为`.o`文件的依赖性，如果找到则再根据那一个规则生成`.o`文件。（这有点像一个堆栈的过程）
+
+5. `C`文件和`H`文件必须存在，于是`make`会生成 `.o` 文件，然后再用 `.o` 文件声明`make`的终极任务，也就是执行文件`edit`了
+
+> 此即`make`的依赖性，`make`会一层又一层地去找文件的依赖关系，直到最终编译出第一个目标文件
+>
+> 在找寻的过程中，如果出现错误，如最后被依赖的文件找不到，那么make就会直接退出，并报错，而对于所定义的命令的错误，或是编译不成功，make不关心不处理
+>
+> make只管文件的依赖性，即如果在找了依赖关系之后，冒号后面的文件还是不在就报错退出
+
+#### Makefile使用变量
+
+上例中，可以使用变量，类似`C`语言的宏，与`SHELL`类似，上例头部可以改为：
+
+> ```makefile
+> objects = main.o kbd.o command.o display.o \
+>           insert.osearch.o files.o utils.o 
+> edit : $(objects)
+> 	cc -o edit $(objects)
+> ```
+
+#### Makefile自动推导/隐晦规则
+
+> `make`遇到一个`.o`文件，它会自动的把`.c`文件加在依赖关系中，即`make`找到一个`whatever.o`，那么`whatever.c`，就会是`whatever.o`的依赖文件，且 `cc -c whatever.c` 也会被推导出来，上例可修改为
+
+> ```makefile
+> objects = main.o kbd.o command.o display.o \
+>           insert.o search.o files.o utils.o
+> edit : $(objects)
+> 	cc -o edit $(objects)
+> main.o : defs.h
+> kbd.o : defs.h command.h
+> command.o : defs.h command.h
+> display.o : defs.h buffer.h
+> insert.o : defs.h buffer.h
+> search.o : defs.h buffer.h
+> files.o : defs.h buffer.h command.h
+> utils.o : defs.h
+>
+> .PHONY : clean
+> clean :
+> 	-rm edit $(objects)
+> ```
+
+#### Makefile伪目标文件
+
+`.PHONY`指示`clean`为伪目标文件，这样显式的指示更为稳健。
+
+另外，上例写法中，`-`表示即使`rm`命令中出现问题，不需要处理，继续后续执行命令。
+
+# Makefile In General
+
+Makefile里主要包含了**五个内容：显式规则、隐晦规则、变量定义、文件指示和注释。**
+
+> 1. **显式规则**。显式规则说明了，如何生成一个或多的的目标文件。这是由Makefile的书写者明显指出，要生成的文件，文件的依赖文件，生成的命令
+> 2. **隐晦规则**。由于我们的make有自动推导的功能，所以隐晦的规则可以让我们比较粗糙地简略地书写Makefile，这是由make所支持的
+> 3. **变量的定义**。在Makefile中我们要定义一系列的变量，变量一般都是字符串，这个有点你C语言中的宏，当Makefile被执行时，其中的变量都会被扩展到相应的引用位置上
+> 4. **文件指示**。其包括了三个部分，一个是在一个Makefile中引用另一个Makefile，就像C语言中的include一样；另一个是指根据某些情况指定Makefile中的有效部分，就像C语言中的预编译#if一样；还有就是定义一个多行的命令
+> 5.  **注释**。Makefile中只有行注释，和UNIX的Shell脚本一样，其注释是用“#”字符。如果你要在你的Makefile中使用“#”字符，可以用反斜框进行转义，如：“\#”
+
+### 文件名 
+
+> - 顺序找寻文件名为**`GNUmakefile`、`makefile`、`Makefile`**的文件
+> - 最好使用`Makefile`
+> - 最好不要用`GNUmakefile`
+> - 可以使用别的文件名来书写`Makefile`，如：Make.Linux，Make.Solaris，Make.AIX等，如果要**指定特定的`Makefile`，你可以使用`make`的`-f`或`--file`参数**，如：`make -f Make.Linux`或`make --file Make.AIX`
+
+### Makefile引用
+
+- Makefile使用include关键字可以把别的Makefile包含进来，被包含的文件会放在当前文件的包含位置
+- `include<filename>`**filename**可以是当前操作系统`Shell`的文件模式（可以保含路径和通配符）
+- `include`前面可以有一些空字符，但是绝不能是`Tab`开始。`include`可以用一个或多个空格隔开
+- `make`命令开始时，会把找寻`include`所指出的其它`Makefile`，并把其内容安置在当前的位置。如果文件都没有指定绝对路径或是相对路径的话，`make`会在当前目录下首先寻找，如果当前目录下没有找到，那么，`make`还会在下面的几个目录下找：
+  1. 如果`make`执行时，有`-I`或`--include-dir`参数，那么`make`就会在这个参数所指定的目录下去寻找
+  2. 如果目录`/include`（一般是：`/usr/local/bin`或`/usr/include`）存在的话，`make`也会去找
+- 如果有文件没有找到的话，make会生成一条警告信息，但不会马上出现致命错误。它会继续载入其它的文件，一旦完成makefile的读取，make会再重试这些没有找到，或是不能读取的文件，如果还是不行，make才会出现一条致命信息。如果你想让make不理那些无法读取的文件，而继续执行，你可以在include前加`-`。如：`-include<filename>`
+- 环境变量`MAKEFILES`，注意其引发的问题
+
+### Makefile工作方式
+
+> 1.        读入所有的`Makefile`
+>
+>
+> 2.        读入被`include`的其它`Makefile`
+>
+>
+> 3.        初始化文件中的变量
+>
+>
+> 4.        推导隐晦规则，并分析所有规则
+>
+>
+> 5.        为所有的目标文件创建依赖关系链
+>
+>
+> 6.        根据依赖关系，决定哪些目标要重新生成
+>
+>
+> 7.        执行生成命令
+>
+> 1-5步为第一个阶段，6-7为第二个阶段。
+>
+> 第一个阶段中，如果定义的变量被使用了，那么，`make`会把其展开在使用的位置。
+>
+> `make`并不会完全马上展开，`make`使用的是`Lazy`模式，如果变量出现在依赖关系的规则中，那么仅当这条依赖被决定要使用了，变量才会在其内部展开。
+
+### Makefile中使用通配符
+
+> - `~`
+>
+>   `~/`表示`$HOME`下，`~userA/`表示`userA HOME`下
+>
+> - `*`
+>
+>   as you know
+>
+>   caution: 在变量中`objects = *.o`在此时并不展开，如要展开使用`objects := $(wildcard *.o)`
+>
+> - `[...]`
+>
+>   like shell
+
+### 文件搜索
+
+>  在一些大的工程中，有大量的源文件，通常的做法是把这许多的源文件分类，并存放在不同的目录中。所以，当make需要去找寻文件的依赖关系时，可以在文件前加上路径，但最好的方法是把一个路径告诉make，让make在自动去找。
+
+#### 特殊变量`VPATH`
+
+若未指明这个变量，`make`只会在当前的目录中去找寻依赖文件和目标文件。定义了这个变量，`make`在当前目录找不到时，去指定的目录中去找寻文件，下例：
+
+```makefile
+VPATH = src:../headers
+```
+
+目录用冒号`:`分割，按列出顺序搜索，当前目录优先级最高
+
+#### 关键字`vpath`
+
+比`VPATH`使用更灵活。如下
+
+> 1.        `vpath <pattern> <directories>`    为符合模式`<pattern>`的文件指定搜索目录`<directories>`
+>
+>
+> 2.        `vpath <pattern>`                               清除符合模式`<pattern>`的文件的搜索目录
+>
+>
+> 3.        `vpath`                                                  清除所有已被设置好了的文件搜索目录
+
+- `<pattern>`需要包含`%`字符。`%`的意思是匹配零或若干字符
+- `<pattern>`指定了要搜索的文件集，`<directories>`指定了的文件集的搜索的目录。例如，某文件在当前目录没有找到时，`make`在`../headers`目录下搜索所有以`.h`结尾的文件。写作：
+
+   ```makefile
+vpath %.h ../headers
+   ```
+
+- 可以连续地使用`vpath`语句，以指定不同搜索策略。连续的vpath语句中出现了相同的`<pattern>`，或是被重复了的`<pattern>`，那么，`make`会按照`vpath`语句的先后顺序来执行搜索。如：
+
+```   makefile
+vpath %.c foo
+vpath %   blish
+vpath %.c bar
+```
+
+​      其表示`.c`结尾的文件，先在`foo`目录，然后是`blish`，最后是`bar`目录。又如：
+
+```   makefile
+vpath %.c foo:bar
+vpath %   blish
+```
+
+​      上面的语句则表示`.c`结尾的文件，先在`foo`目录，然后是`bar`目录，最后才是`blish`目录。
+
+#### 再谈伪目标
+
+`clean`的目标，是一个伪目标，因为，并不生成`clean`这个文件。伪目标并非是文件，而是标签，make无法生成它的依赖关系和决定它是否要执行。只有通过显示地指明这个“目标”才能让其生效。伪目标取名不能和文件名重名。为了避免和文件重名的情况，可以使用一个`.PHONY`来显示地指明一个目标是伪目标`.PHONY : clean`。
+
+伪目标一般没有依赖的文件。但也可以为伪目标指定所依赖的文件。伪目标同样可以作为默认目标，只要将其放在第一个。一个示例就是，如果需要一口气生成若干个可执行文件，但只想敲一个make完事，并且，所有的目标文件都写在一个Makefile中，那么你可以使用伪目标这个特性：
+
+```   makefile
+all : prog1 prog2 prog3
+.PHONY : all
+prog1 : prog1.o utils.o
+	cc -o prog1 prog1.o utils.o
+prog2 : prog2.o
+	cc -o prog2 prog2.o
+prog3 : prog3.o sort.o utils.o
+	cc -o prog3 prog3.o sort.o utils.o
+```
+
