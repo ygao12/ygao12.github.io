@@ -19,4 +19,6 @@ description: effective-cpp笔记
 
 
 # Terminology
+1. declaration & definition
+   - declaration 
 
