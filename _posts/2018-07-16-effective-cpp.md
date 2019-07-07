@@ -28,9 +28,12 @@ description: effective-cpp笔记
      template<typename T>                //  template declaration
      class GraphNode;
      ```
-   - definition: provides compilers with the details a declaration omits. \
-     For an object, the definition is where compilers set aside memory for the object. \
-     For a function or a function template, the definition provides the code body. \
+   - definition: provides compilers with the details a declaration omits.
+
+     For an object, the definition is where compilers set aside memory for the object.
+
+     For a function or a function template, the definition provides the code body.
+
      For a class or a class template, the definition lists the members of the class or template.
      ``` c++
      int x;                               //  object definition
