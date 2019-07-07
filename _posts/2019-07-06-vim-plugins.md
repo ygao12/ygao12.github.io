@@ -55,7 +55,7 @@ use `cs'"` to replace ' with ", use `ds'` to delete ', use `ys + (iw/s) + '` to 
 ``` bash
 Bundle 'vim-scripts/matchit.zip'
 ```
-use `%` to jump with matched labels like xml/html in addition to {}[]() etc.
+use `%` to jump with matched labels like xml/html in addition to {}\[\]\(\) etc.
 
 ## tComment
 ``` bash
