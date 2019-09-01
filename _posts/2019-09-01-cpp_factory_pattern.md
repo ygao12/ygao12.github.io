@@ -106,10 +106,10 @@ class RegisterProduct {
 #define REGISTER_PRODUCT(CLS_NAME) \
     RegisterProduct _##CLS_NAME(VirtualTag<CLS_NAME>(), #CLS_NAME);
 ```
-we need a `RegisterProduct` class to add product into factory, because we cannot call function in MARCRO directly,
+we need a `RegisterProduct` class to add product into factory, because we cannot call function in MACRO directly,
 in class `RegisterProduct`, we have two construction method, one with template, one with product pointer.
 Notice, we cannot call construction function directly, so we need a virtual struct named VirtualTag to help specifying
-the template T; Look carefully the MARCRO `REGISTER_PRODUCT`;
+the template T; Look carefully the MACRO `REGISTER_PRODUCT`;
 
 ## product_impl.h
 ``` cpp
