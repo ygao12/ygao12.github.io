@@ -1,6 +1,6 @@
 ---
 layout: post
-title: c++工厂模式
+title: c++工厂模式二
 category: 技术
 tags: cpp coding
 keywords: factory-pattern
