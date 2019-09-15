@@ -9,7 +9,7 @@ description: cpp factory pattern design
 * contents
 {:toc}
 
-cpp factory mode design with creators, code at repo [github](https://github.com/ygao12/experiments/tree/master/cpp/factory_demo_with_creator)
+cpp factory mode design with creators, code at [repo](https://github.com/ygao12/experiments/tree/master/cpp/factory_demo_with_creator)
 
 
 Use c++11 feature `functional` to generate a factory with product creators, is more flexible than previous one. See more detail in the code.

@@ -9,7 +9,7 @@ description: cpp factory pattern design
 * contents
 {:toc}
 
-cpp factory mode design, code at repo [github](https://github.com/ygao12/experiments/tree/master/cpp/factory_demo)
+cpp factory mode design, code at [repo](https://github.com/ygao12/experiments/tree/master/cpp/factory_demo)
 
 
 
