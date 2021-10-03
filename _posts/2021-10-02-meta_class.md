@@ -9,9 +9,6 @@ description: python metaclass
 * contents
 {:toc}
 
-python metaclass 记录
-
-
 ## KEYPOINTS
 
 - PYTHON中一切用户定义的类均是type类的实例
@@ -20,6 +17,8 @@ python metaclass 记录
 - __new__函数是用于生成实例，__init__函数是用于初始化实例
 - metaclass是type的子类，可以通过重载__call__/__new__/__init__函数从而影响类的构造过程
 - 使用metaclass可以减少重复代码量，对同质工作抽象统一，与decorator类似，可以理解为在构建这个类时，先要统一执行metaclass里边定义的行为
+
+
 
 ## SAMPLES
 
